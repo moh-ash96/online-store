@@ -3,18 +3,9 @@ import axios from "axios";
 import Modal from 'react-bootstrap/Modal';
 import ModalHeader from 'react-bootstrap/ModalHeader';
 import ModalTitle from 'react-bootstrap/ModalTitle';
-import ModalBody from 'react-bootstrap/ModalBody';
-import ModalFooter from 'react-bootstrap/ModalFooter';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { Col, Row } from "react-bootstrap";
-import { Image } from "react-bootstrap";
-import CardGroup from 'react-bootstrap/CardGroup'
-import { Card } from "react-bootstrap";
-import { ListGroup } from "react-bootstrap";
-import { ListGroupItem } from "react-bootstrap";
-import { OverlayTrigger } from "react-bootstrap";
-import { Popover } from "react-bootstrap";
+import { Col, Card, ListGroup, ListGroupItem, OverlayTrigger, Popover } from "react-bootstrap";
 import Header from "./header";
 import useTranslation from "next-translate/useTranslation";
 
@@ -22,18 +13,19 @@ import useTranslation from "next-translate/useTranslation";
 
 export default function Main(props) {
 
-    const [showModal, setShowModal] = useState(false)
-    const [showUpdate, setShowUpdate] = useState(false)
-    const [updateId, setUpdateId] = useState(0)
-    const [deleteId, setDeleteId] = useState(0)
-    const [deletedItem, setDeletedItem] = useState('')
+    /////// Variables ///////
+
+    const [showModal, setShowModal] = useState(false) // a flag for add item popup form
+    const [showUpdate, setShowUpdate] = useState(false) // a flag for update item popup form
+    const [updateId, setUpdateId] = useState(0) // to be used in the put request
+    const [deleteId, setDeleteId] = useState(0) // to be used in the delete request
     const [addData, setAddData] = useState({
         title: '',
         price: '',
         description: '',
         image: '',
         category: ''
-    })
+    }) // to be filled with the data coming from add item form for post request
 
     const [products, setProducts] = useState([{
         "id": 4,
@@ -42,7 +34,7 @@ export default function Main(props) {
         "description": "The color could be slightly different between on the screen and in practice. / Please note that body builds vary by person, therefore, detailed size information should be reviewed below on the product description.",
         "category": "men's clothing",
         "image": "https://fakestoreapi.com/img/71YXzeOuslL._AC_UY879_.jpg",
-    }])
+    }]) // to save the products from the api get request to be rendered 
 
     const [addedItem, setAddedItem] = useState([{
         "id": 0,
@@ -51,7 +43,7 @@ export default function Main(props) {
         "description": "",
         "category": "",
         "image": "",
-    }])
+    }]) // takes the response from the post request
 
     const [updateItem, setUpdateItem] = useState(
         {
@@ -62,9 +54,16 @@ export default function Main(props) {
             "category": "",
             "image": "",
         }
-    )
+    ) // to take the update item info for put request
+
+    let { t } = useTranslation() // for translation
+
+    ///////async functions///////
 
     async function getData() {
+
+        // get request
+
         const url = 'https://fakestoreapi.com/products';
         const response = axios.get(url);
         console.log(await response);
@@ -72,10 +71,26 @@ export default function Main(props) {
     }
 
     async function addItem(data) {
+
+        // post request
+
         const url = 'https://fakestoreapi.com/products';
         const response = axios.post(url, data)
         return await response
     }
+
+    async function updateData(data) {
+
+        // put request
+        
+        const url = `https://fakestoreapi.com/products/${updateId}`;
+        const response = axios.put(url, data);
+        return await response
+    }
+
+
+
+    ///////useEffect///////
 
     useEffect(() => {
         async function fetchData() {
@@ -85,24 +100,6 @@ export default function Main(props) {
         fetchData();
     }, []);
 
-    function oneProduct(e) {
-        e.preventDefault();
-        console.log(e);
-    }
-
-    function handleShow(e) {
-        setShowModal(true)
-    }
-
-    function handleClose() {
-        setShowModal(false)
-    }
-
-    function handleCloseUpdate() {
-        setShowUpdate(false)
-    }
-
-
     useEffect(() => {
         async function fetchData() {
             const response = await addItem(addData);
@@ -110,12 +107,67 @@ export default function Main(props) {
         }
         fetchData();
     }, [addData]);
-    
-    let { t } = useTranslation()
 
 
+    useEffect(() => {
+        async function fetchData() {
+            const response = await updateData(updateItem);
+            console.log(response.data)
+        }
+        fetchData();
+    });
     
+
+    function handleDelete(e) {
+
+        // sets the delete id for deleting a product
+
+        e.preventDefault()
+        setDeleteId(e.target.id)
+        alert(t("common:deletedAnItem"))
+    }
+    
+    useEffect(() => {
+        async function deleteItem() {
+            const url = `https://fakestoreapi.com/products/${deleteId}`;
+            const response = await axios.delete(url);
+            return response;
+        }
+
+        async function fetchData() {
+            const response = await deleteItem();
+            console.log(response.data);
+        }
+        fetchData()
+    }, [deleteId])
+
+    /////// event handlers/////// 
+
+    function handleShow(e) {
+
+        // to show the add item modal when add item button is clicked
+
+        setShowModal(true)
+    }
+
+    function handleClose() {
+
+        // to hide the open modal when closed
+
+        setShowModal(false)
+    }
+
+    function handleCloseUpdate() {
+
+        // to hide update modal when it is closed
+
+        setShowUpdate(false)
+    }
+
     function handleAdd(e) {
+
+        // to get the data from add item form for adding a new item (post request)
+
         e.preventDefault();
         setAddData({
             title: e.target[0].value,
@@ -131,12 +183,18 @@ export default function Main(props) {
     }
 
     function handleUpdate(e) {
+
+        // to show update form modal, and decide the id of product to be updated
+
         e.preventDefault()
         setShowUpdate(true)
         setUpdateId(e.target.id)
     }
 
     function handleUpdateSubmit(e) {
+
+        // Takes the values for put request from update form
+
         e.preventDefault();
         setUpdateItem({
             title: e.target[0].value,
@@ -150,39 +208,7 @@ export default function Main(props) {
 
     }
 
-    async function updateData(data) {
-        const url = `https://fakestoreapi.com/products/${updateId}`;
-        const response = axios.put(url, data);
-        return await response
-    }
-
-    useEffect(() => {
-        async function fetchData() {
-            const response = await updateData(updateItem);
-            console.log(response.data)
-        }
-        fetchData();
-    });
-
-    function handleDelete(e) {
-        e.preventDefault()
-        setDeleteId(e.target.id)
-        alert(t("common:deletedAnItem"))
-    }
-
-    useEffect(() => {
-        async function deleteItem() {
-            const url = `https://fakestoreapi.com/products/${deleteId}`;
-            const response = await axios.delete(url);
-            return response;
-        }
-
-        async function fetchData() {
-            const response = await deleteItem();
-            console.log(response.data);
-        }
-        fetchData()
-    }, [deleteId])
+    
 
 
     return (
@@ -198,7 +224,7 @@ export default function Main(props) {
                     <Form onSubmit={handleAdd}>
                         <Form.Group as={Col} controlId="formGridTitle">
                             <Form.Label>{t("common:Title")}</Form.Label>
-                            <Form.Control type="text" placeholder={t("common:ItemTitle")}/>
+                            <Form.Control type="text" placeholder={t("common:ItemTitle")} />
                         </Form.Group>
 
                         <Form.Group as={Col} controlId="formGridPrice">
@@ -222,7 +248,7 @@ export default function Main(props) {
                         </Form.Group>
 
                         <Button variant="primary" type="submit">
-                        {t("common:submit")}
+                            {t("common:submit")}
                         </Button>
                     </Form>
                 </Modal.Body>
@@ -239,35 +265,10 @@ export default function Main(props) {
                 {
                     products.map(product => (
                         <div key={product.id} className="m-5 overflow-auto">
-
-                            {/* <Image src={product.image} alt='' />
-                        <h2 key={product.id} onClick={oneProduct} id={product.id}>{product.title}</h2>
-                        <h3>{product.price}</h3>
-                        <p>{product.description}</p>
-                        <Button id={product.id} onClick={handleUpdate}>Update Item</Button>
-                    <Button id={product.id} onClick={handleDelete}>Delete Item</Button> */}
-                            {/* <Row xs={1} md={2} className="g-4">
-                            {Array.from({ length: 4 }).map((_, idx) => (
-                                <Col key={product.id}>
-                                <Card>
-                                <Card.Img variant="top" src={product.image} />
-                                <Card.Body>
-                                <Card.Title>{product.title}</Card.Title>
-                                <Card.Subtitle>{product.price}</Card.Subtitle>
-                                <Card.Text>
-                                {product.description}
-                                </Card.Text>
-                                </Card.Body>
-                                </Card>
-                                </Col>
-                                ))}
-                            </Row> */}
                             <Card style={{ width: '18rem', height: '45rem' }}>
                                 <Card.Img variant="top" src={product.image} className="img-thumbnail" style={{ maxHeight: '24rem' }} />
                                 <Card.Body>
                                     <Card.Title>{product.title}</Card.Title>
-                                    {/* <Card.Text> */}
-                                    {/* {product.description} */}
                                     <OverlayTrigger
                                         trigger="click"
                                         overlay={
@@ -278,15 +279,12 @@ export default function Main(props) {
                                     >
                                         <Button variant="secondary">{t("common:description")}</Button>
                                     </OverlayTrigger>
-                                    {/* </Card.Text> */}
                                 </Card.Body>
                                 <ListGroup className="list-group-flush">
                                     <ListGroupItem>{t("common:price")}: {product.price}</ListGroupItem>
                                     <ListGroupItem>{t("common:category")}: {product.category}</ListGroupItem>
                                 </ListGroup>
                                 <Card.Footer>
-                                    {/* <Card.Link href="#">Card Link</Card.Link> */}
-                                    {/* <Card.Link href="#">Another Link</Card.Link> */}
                                     <div className="gap-2 d-grid stick-bottom">
                                         <Button size="sm" id={product.id} onClick={handleUpdate}>{t("common:updateItem")}</Button>
                                         <Button size="sm" id={product.id} onClick={handleDelete}>{t("common:deleteItem")}</Button>
@@ -335,7 +333,7 @@ export default function Main(props) {
                                 </Form.Group>
 
                                 <Button variant="primary" type="submit">
-                                {t("common:submit")}
+                                    {t("common:submit")}
                                 </Button>
                             </Form>
                         ))
