@@ -16,7 +16,7 @@ export default function Header(props) {
                     <Navbar.Brand href="#home">Online Store</Navbar.Brand>
                     <Nav className="me-auto">
                         <Nav.Link href="#home">{t("common:home")}</Nav.Link>
-                        <Nav.Link href="#pricing">{t("common:about")}</Nav.Link>
+                        <Nav.Link href="#about">{t("common:about")}</Nav.Link>
                     </Nav>
                     <Navbar.Collapse className="justify-content-end">
                         <Navbar.Text className="text-xs">
