@@ -4,7 +4,7 @@ import axios from 'axios'
 import Footer from "./footer"
 import Main from "./main"
 import { Navbar, Container, Button } from "react-bootstrap"
-import { DropdownButton, Dropdown, NavDropdown } from "react-bootstrap";
+import { NavDropdown } from "react-bootstrap";
 import { useRouter } from "next/dist/client/router";
 import Link from 'next/link'
 
@@ -19,7 +19,11 @@ export default function Login() {
     const [loggedIn, setLoggedIn] = useState(false);
     const [msg, setMsg] = useState('');
 
+
+
     useEffect(() => {
+
+        // Check if the user login details are in local storage
 
         if (localStorage.getItem('token')) {
             setLoggedIn(true);
@@ -30,15 +34,23 @@ export default function Login() {
 
 
     function handleUser(event) {
+
+        //Gets username from the form
+        //Adds username to localStorage to be displayed in the header 
+
         setUserName(event.target.value)
         localStorage.setItem("user", event.target.value)
     }
 
     function handlePass(event) {
+
+        // Gets the password from the form
+
         setPass(event.target.value);
     }
 
     async function getToken() {
+        // get request to check for sign in credentials
         const url = 'https://fakestoreapi.com/auth/login';
         const response = axios.post(url, {
             "username": userName,
@@ -50,6 +62,10 @@ export default function Login() {
 
 
     async function handleSubmit(event) {
+
+        // For Login
+        // Adds token to LocalStorage, so it keeps logged in when the page is refreshed
+
         event.preventDefault();
         const response = await getToken();
         if ('token' in response.data) {
@@ -65,6 +81,9 @@ export default function Login() {
     }
 
     function handleSignOut(e) {
+
+        //for sign out button, removes token and user from localStorage
+
         e.preventDefault()
         setLoggedIn(false)
         localStorage.removeItem('token')
